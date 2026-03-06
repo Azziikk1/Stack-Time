@@ -1,6 +1,6 @@
 {
   "appId": "com.stackgame.app",
-  "appName": "STACK",
+  "appName": "Stack Time",
   "webDir": "www",
   "android": {
     "allowMixedContent": true,
