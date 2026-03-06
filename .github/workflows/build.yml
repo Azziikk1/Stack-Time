@@ -36,6 +36,21 @@ jobs:
       - name: Sync web files
         run: npx cap sync android
 
+      - name: Disable WebView tap highlight
+        run: |
+          # WebView'da tap highlight'ı kapat
+          MAIN_ACTIVITY=$(find android -name "MainActivity.kt" -o -name "MainActivity.java" | head -1)
+          if [ -f "$MAIN_ACTIVITY" ]; then
+            echo "Found: $MAIN_ACTIVITY"
+          fi
+          # styles.xml — tap highlight rengi kapat
+          STYLES="android/app/src/main/res/values/styles.xml"
+          if [ -f "$STYLES" ]; then
+            sed -i 's|</style>|    <item name="android:colorControlHighlight">@android:color/transparent</item>\n    <item name="colorControlHighlight">@android:color/transparent</item>\n</style>|' "$STYLES"
+            echo "styles.xml updated"
+            cat "$STYLES"
+          fi
+
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
