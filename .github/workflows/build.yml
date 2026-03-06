@@ -36,13 +36,13 @@ jobs:
       - name: Sync web files
         run: npx cap sync android
 
+      - name: Patch styles.xml
+        run: python3 patch_styles.py
+
       - name: Set app icon
         run: |
           pip install pillow --quiet
           python3 resize_icon.py
-
-      - name: Patch styles.xml
-        run: python3 patch_styles.py
 
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/stackgame.keystore
