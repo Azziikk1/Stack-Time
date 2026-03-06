@@ -265,6 +265,15 @@ canvas#canvas{display:block;position:fixed;top:0;left:0;z-index:5;touch-action:n
   <button id="qr-close">✕ KAPAT</button>
 </div>
 
+<!-- AVATAR MODAL -->
+<div id="avatar-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid rgba(255,255,255,.15);padding:20px;max-width:340px;width:90%;border-radius:4px;">
+    <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.4rem;letter-spacing:3px;color:#fff;margin-bottom:16px;text-align:center;">AVATAR SEÇ</div>
+    <div id="avatar-modal-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;"></div>
+    <button id="avatar-modal-close" style="width:100%;font-family:'Bebas Neue',Impact,sans-serif;font-size:1.2rem;letter-spacing:3px;padding:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer;">✕ KAPAT</button>
+  </div>
+</div>
+
 <!-- MENU -->
 <div class="screen" id="menu" style="position:relative;">
   <button id="settings-btn" style="position:absolute;top:14px;right:14px;font-family:'DM Mono','Courier New',Courier,monospace;font-size:.7rem;color:rgba(255,255,255,.4);letter-spacing:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:6px 10px;cursor:pointer;z-index:10;">⚙️</button>
@@ -453,10 +462,7 @@ canvas#canvas{display:block;position:fixed;top:0;left:0;z-index:5;touch-action:n
 <!-- SETTINGS -->
 <div class="screen hidden" id="settings-screen">
   <h2>AYARLAR</h2>
-  <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-    <span class="settings-label" data-lang="avatar">AVATAR</span>
-    <div class="avatar-row" id="avatar-row"></div>
-  </div>
+  <div class="settings-row" style="display:none;"><div class="avatar-row" id="avatar-row"></div></div>
   <div class="settings-row">
     <span class="settings-label" data-lang="trail">İZ STİLİ</span>
     <select id="trail-style" style="font-family:'DM Mono','Courier New',Courier,monospace;font-size:.72rem;background:rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.25);color:#fff;padding:5px 8px;cursor:pointer;letter-spacing:1px;">
@@ -536,7 +542,7 @@ function applyLang(){
   renderDailyTasks();
   // Mute butonu
   const mb=document.getElementById('mute-btn');
-  if(mb)mb.textContent=settings&&settings.muted?T('unmute'):T('mute');
+  if(mb)mb.textContent=muted?'🔇':'🔊';
   // Share/QR
   const sh=document.getElementById('share-btn');if(sh)sh.textContent=T('share');
   const qr=document.getElementById('qr-btn');if(qr)qr.textContent=T('qr');
@@ -1761,8 +1767,10 @@ function renderMenuLb(){}
 function renderProfile(){
   const accent=THEMES[currentTheme].accent;
   // Avatar & name
-  document.getElementById('prof-avatar').textContent=settings.avatar||'';
+  document.getElementById('prof-avatar').textContent=settings.avatar||'😎';
   document.getElementById('prof-avatar').style.color=accent;
+  document.getElementById('prof-avatar').style.cursor='pointer';
+  document.getElementById('prof-avatar').onclick=openAvatarModal;
   const name=settings.playerName||'OYUNCU';
   document.getElementById('player-name-input').value=settings.playerName||'';
   // Title
@@ -1808,6 +1816,33 @@ function renderProfile(){
     return item?item.icon+' '+item.name:'';
   }).filter(Boolean);
 }
+function openAvatarModal(){
+  const modal=document.getElementById('avatar-modal');
+  modal.style.display='flex';
+  const allAvatars=[...FREE_AVATARS,...LOCKED_AVATARS];
+  const grid=document.getElementById('avatar-modal-grid');
+  const accent=THEMES[currentTheme].accent;
+  grid.innerHTML=allAvatars.map(a=>{
+    const shopId=AVATAR_SHOP_ID[a];
+    const owned=!shopId||shopOwned.includes(shopId);
+    const selected=settings.avatar===a;
+    return `<button onclick="selectAvatar('${a}','${shopId||''}')" style="font-size:1.8rem;padding:8px;border:2px solid ${selected?accent:owned?'rgba(255,255,255,.2)':'rgba(255,255,255,.08)'};background:${selected?'rgba(0,255,231,.1)':'transparent'};cursor:pointer;border-radius:4px;opacity:${owned?1:.45};position:relative;">${a}${!owned?'<span style="position:absolute;bottom:2px;right:2px;font-size:.5rem;">🔒</span>':''}</button>`;
+  }).join('');
+}
+function selectAvatar(a,shopId){
+  const owned=!shopId||shopOwned.includes(shopId);
+  if(!owned){
+    document.getElementById('avatar-modal').style.display='none';
+    showScreen('shop');
+    return;
+  }
+  settings.avatar=a;
+  saveSettings();
+  renderProfile();
+  openAvatarModal();
+}
+
+
 function renderTitlesScreen(){
   const eq=getEquippedTitle();
   document.getElementById('titles-equipped').textContent=eq?'AKTİF UNVAN: '+eq.label:'Henüz unvan yok';
@@ -1928,7 +1963,7 @@ document.getElementById('resume-btn').addEventListener('click',e=>{e.stopPropaga
 document.getElementById('pause-menu-btn').addEventListener('click',e=>{e.stopPropagation();state='menu';cancelAnimationFrame(animId);clearInterval(timerInterval);stopMusic();applyLang();showScreen('menu');});
 document.getElementById('retry-btn').addEventListener('click',e=>{e.stopPropagation();showScreen('game');initGame();});
 document.getElementById('go-menu-btn').addEventListener('click',e=>{e.stopPropagation();state='menu';applyLang();showScreen('menu');});
-document.getElementById('mute-btn').addEventListener('click',e=>{e.stopPropagation();muted=!muted;e.target.textContent=muted?'':'';if(muted)stopMusic();else if(state==='playing')startMusic();});
+document.getElementById('mute-btn').addEventListener('click',e=>{e.stopPropagation();muted=!muted;e.target.textContent=muted?'🔇':'🔊';if(muted)stopMusic();else if(state==='playing')startMusic();});
 document.getElementById('share-btn').addEventListener('click',e=>{e.stopPropagation();shareScore();});
 document.getElementById('qr-btn').addEventListener('click',e=>{e.stopPropagation();showQR();});
 document.getElementById('qr-close').addEventListener('click',e=>{e.stopPropagation();document.getElementById('qr-modal').classList.remove('show');});
@@ -1971,6 +2006,13 @@ canvas.addEventListener('touchend',e=>{
   e.preventDefault();
   triggerDrop();
 },{passive:false});
+document.getElementById('avatar-modal-close').addEventListener('click',()=>{
+  document.getElementById('avatar-modal').style.display='none';
+});
+document.getElementById('avatar-modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('avatar-modal'))
+    document.getElementById('avatar-modal').style.display='none';
+});
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'||e.code==='ArrowDown'){e.preventDefault();if(state==='playing')triggerDrop();}
   if(e.code==='Escape'){if(state==='playing')document.getElementById('pause-btn').click();else if(state==='paused')document.getElementById('resume-btn').click();}
