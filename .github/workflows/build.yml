@@ -36,6 +36,11 @@ jobs:
       - name: Sync web files
         run: npx cap sync android
 
+      - name: Force copy index.html
+        run: |
+          cp www/index.html android/app/src/main/assets/public/index.html
+          echo "index.html force copied to android assets"
+
       - name: Patch styles.xml
         run: python3 patch_styles.py
 
@@ -44,14 +49,45 @@ jobs:
           pip install pillow --quiet
           python3 resize_icon.py
           # Tüm mipmap klasörlerine zorla kopyala
-          for dir in android/app/src/main/res/mipmap-*; do
+          for dir in android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
+            mkdir -p "$dir"
             cp icon_512_final.png "$dir/ic_launcher.png"
             cp icon_512_final.png "$dir/ic_launcher_round.png"
             echo "Copied to $dir"
           done
+          # adaptive icon klasörünü sil
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          echo "Removed adaptive icons"
+          # AndroidManifest - icon referansını güncelle
+          sed -i 's/android:roundIcon="[^"]*"//g' android/app/src/main/AndroidManifest.xml
+          echo "Manifest updated"
           ls android/app/src/main/res/mipmap-xxxhdpi/
 
-      - name: Decode keystore
+      - name: Patch MainActivity for back button
+        run: |
+          MAIN=$(find android/app/src/main/java -name "MainActivity.java" | head -1)
+          echo "Found: $MAIN"
+          cat > "$MAIN" << 'JAVAEOF'
+package com.stackgame.app;
+
+import android.os.Bundle;
+import android.webkit.WebView;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onBackPressed() {
+        WebView webView = getBridge().getWebView();
+        if (webView != null) {
+            webView.evaluateJavascript("window.handleAndroidBack && window.handleAndroidBack();", null);
+        }
+    }
+}
+JAVAEOF
+          echo "MainActivity patched"
+          cat "$MAIN"
+
+
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/stackgame.keystore
 
       - name: Make gradlew executable
