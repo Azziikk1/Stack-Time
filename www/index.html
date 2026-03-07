@@ -335,7 +335,7 @@ body.lang-ru .section-title{font-size:0.57rem !important;letter-spacing:2px !imp
     </div>
     <button id="ob-next-btn" style="font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:3px;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(255,255,255,.2);padding:8px 24px;cursor:pointer;">İLERİ →</button>
   </div>
-  <button id="ob-skip-btn" style="position:absolute;bottom:20px;right:20px;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:2px;color:rgba(255,255,255,.2);background:none;border:none;cursor:pointer;padding:8px;">GEÇ ✕</button>
+  <button id="ob-skip-btn" style="position:absolute;bottom:24px;right:24px;font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:2px;color:rgba(255,255,255,.35);background:none;border:1px solid rgba(255,255,255,.15);cursor:pointer;padding:10px 18px;border-radius:4px;">GEÇ ✕</button>
 </div>
 
 <div class="screen" id="menu" style="position:relative;">
@@ -407,6 +407,17 @@ body.lang-ru .section-title{font-size:0.57rem !important;letter-spacing:2px !imp
   <h2>⏸ DURAKLATILDI</h2>
   <button class="menu-btn" id="resume-btn"> DEVAM ET</button>
   <button class="menu-btn" id="pause-menu-btn"> ANA MENÜ</button>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirm-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:9999;display:none;align-items:center;justify-content:center;">
+  <div style="background:#0d0d1a;border:1px solid rgba(255,255,255,.15);padding:32px 28px;max-width:280px;width:90%;text-align:center;">
+    <div id="confirm-msg" style="font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.7);letter-spacing:2px;line-height:1.8;margin-bottom:24px;"></div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button id="confirm-yes" style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.2rem;letter-spacing:2px;padding:10px 28px;border:2px solid #ff4757;background:transparent;color:#ff4757;cursor:pointer;">EVET</button>
+      <button id="confirm-no" style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.2rem;letter-spacing:2px;padding:10px 28px;border:2px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;">HAYIR</button>
+    </div>
+  </div>
 </div>
 
 <!-- GAME OVER -->
@@ -2051,9 +2062,17 @@ document.getElementById('theme-row').addEventListener('click',e=>{const b=e.targ
 document.getElementById('start-btn').addEventListener('click',e=>{e.stopPropagation();showScreen('game');initGame();});
 document.getElementById('pause-btn').addEventListener('click',e=>{e.stopPropagation();if(state==='playing'){state='paused';cancelAnimationFrame(animId);stopMusic();showScreen('pause');}});
 document.getElementById('resume-btn').addEventListener('click',e=>{e.stopPropagation();state='playing';showScreen('game');startMusic();tick();});
-document.getElementById('pause-menu-btn').addEventListener('click',e=>{e.stopPropagation();state='menu';cancelAnimationFrame(animId);clearInterval(timerInterval);stopMusic();applyLang();showScreen('menu');});
+document.getElementById('pause-menu-btn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const t=OB_LANGS[currentLang]||OB_LANGS.en;
+  showConfirm(t.confirmMenu,()=>{state='menu';cancelAnimationFrame(animId);clearInterval(timerInterval);stopMusic();applyLang();showScreen('menu');});
+});
 document.getElementById('retry-btn').addEventListener('click',e=>{e.stopPropagation();showScreen('game');initGame();});
-document.getElementById('go-menu-btn').addEventListener('click',e=>{e.stopPropagation();state='menu';applyLang();showScreen('menu');});
+document.getElementById('go-menu-btn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const t=OB_LANGS[currentLang]||OB_LANGS.en;
+  showConfirm(t.confirmMenu,()=>{state='menu';applyLang();showScreen('menu');});
+});
 document.getElementById('mute-btn').addEventListener('click',e=>{e.stopPropagation();muted=!muted;e.target.textContent=muted?'🔇':'🔊';if(muted)stopMusic();else if(state==='playing')startMusic();});
 document.getElementById('share-btn').addEventListener('click',e=>{e.stopPropagation();shareScore();});
 document.getElementById('qr-btn').addEventListener('click',e=>{e.stopPropagation();showQR();});
@@ -2138,13 +2157,25 @@ drawBg();
 
 // ONBOARDING çevirileri
 const OB_LANGS = {
-  tr: { sub1:'BLOKLARI YIĞMANIN ZAMANI GELDİ', features:'5 oyun modu<br>54 başarım<br>Online liderlik tablosu', howTitle:'— NASIL OYNANIR —', tap:'EKRANA DOKUN', tapDesc:'Hareket eden bloğu<br>tam üste denk getir<br>Ne kadar mükemmel — o kadar puan!', ready:'HAZIR MISIN?', readyDesc:'Rekorunu kır<br>başarımları topla<br>zirveye çık', btn:'OYNAYALIM ▶', next:'İLERİ →', skip:'GEÇ ✕' },
-  en: { sub1:'TIME TO STACK THE BLOCKS', features:'5 game modes<br>54 achievements<br>Online leaderboard', howTitle:'— HOW TO PLAY —', tap:'TAP THE SCREEN', tapDesc:'Align the moving block<br>perfectly on top<br>More perfect — more points!', ready:'READY TO PLAY?', readyDesc:'Break your record<br>collect achievements<br>reach the top', btn:'LET\'S PLAY ▶', next:'NEXT →', skip:'SKIP ✕' },
-  de: { sub1:'ZEIT, DIE BLÖCKE ZU STAPELN', features:'5 Spielmodi<br>54 Erfolge<br>Online-Bestenliste', howTitle:'— WIE MAN SPIELT —', tap:'TIPPE AUF DEN BILDSCHIRM', tapDesc:'Bewege den Block<br>exakt auf den Stapel<br>Je perfekter — desto mehr Punkte!', ready:'BEREIT?', readyDesc:'Brich deinen Rekord<br>sammle Erfolge<br>erreiche die Spitze', btn:'SPIELEN ▶', next:'WEITER →', skip:'ÜBERSPR. ✕' },
-  es: { sub1:'ES HORA DE APILAR BLOQUES', features:'5 modos de juego<br>54 logros<br>Tabla de clasificación online', howTitle:'— CÓMO JUGAR —', tap:'TOCA LA PANTALLA', tapDesc:'Alinea el bloque móvil<br>perfectamente encima<br>¡Más perfecto — más puntos!', ready:'¿LISTO PARA JUGAR?', readyDesc:'Rompe tu récord<br>colecciona logros<br>llega a la cima', btn:'JUGAR ▶', next:'SIGUIENTE →', skip:'OMITIR ✕' },
-  ru: { sub1:'ВРЕМЯ СКЛАДЫВАТЬ БЛОКИ', features:'5 режимов игры<br>54 достижения<br>Онлайн таблица лидеров', howTitle:'— КАК ИГРАТЬ —', tap:'НАЖМИ НА ЭКРАН', tapDesc:'Совмести движущийся блок<br>точно сверху<br>Чем точнее — тем больше очков!', ready:'ГОТОВ ИГРАТЬ?', readyDesc:'Побей свой рекорд<br>собирай достижения<br>достигни вершины', btn:'ИГРАТЬ ▶', next:'ДАЛЕЕ →', skip:'ПРОПУСТИТЬ ✕' },
+  tr: { sub1:'BLOKLARI YIĞMANIN ZAMANI GELDİ', features:'5 oyun modu<br>54 başarım<br>Online liderlik tablosu', howTitle:'— NASIL OYNANIR —', tap:'EKRANA DOKUN', tapDesc:'Hareket eden bloğu<br>tam üste denk getir<br>Ne kadar mükemmel — o kadar puan!', ready:'HAZIR MISIN?', readyDesc:'Rekorunu kır<br>başarımları topla<br>zirveye çık', btn:'OYNAYALIM ▶', next:'İLERİ →', skip:'GEÇ ✕', yes:'EVET', no:'HAYIR', confirmMenu:'Menüye dönmek<br>istediğinden emin misin?<br>Oyun kaybolacak.', confirmExit:'Oyundan çıkmak<br>istediğinden emin misin?' },
+  en: { sub1:'TIME TO STACK THE BLOCKS', features:'5 game modes<br>54 achievements<br>Online leaderboard', howTitle:'— HOW TO PLAY —', tap:'TAP THE SCREEN', tapDesc:'Align the moving block<br>perfectly on top<br>More perfect — more points!', ready:'READY TO PLAY?', readyDesc:'Break your record<br>collect achievements<br>reach the top', btn:'LET\'S PLAY ▶', next:'NEXT →', skip:'SKIP ✕', yes:'YES', no:'NO', confirmMenu:'Are you sure you want<br>to return to menu?<br>Game will be lost.', confirmExit:'Are you sure you<br>want to exit?' },
+  de: { sub1:'ZEIT, DIE BLÖCKE ZU STAPELN', features:'5 Spielmodi<br>54 Erfolge<br>Online-Bestenliste', howTitle:'— WIE MAN SPIELT —', tap:'TIPPE AUF DEN BILDSCHIRM', tapDesc:'Bewege den Block<br>exakt auf den Stapel<br>Je perfekter — desto mehr Punkte!', ready:'BEREIT?', readyDesc:'Brich deinen Rekord<br>sammle Erfolge<br>erreiche die Spitze', btn:'SPIELEN ▶', next:'WEITER →', skip:'ÜBERSPR. ✕', yes:'JA', no:'NEIN', confirmMenu:'Zurück zum Menü?<br>Das Spiel geht verloren.', confirmExit:'Möchtest du das<br>Spiel beenden?' },
+  es: { sub1:'ES HORA DE APILAR BLOQUES', features:'5 modos de juego<br>54 logros<br>Tabla de clasificación online', howTitle:'— CÓMO JUGAR —', tap:'TOCA LA PANTALLA', tapDesc:'Alinea el bloque móvil<br>perfectamente encima<br>¡Más perfecto — más puntos!', ready:'¿LISTO PARA JUGAR?', readyDesc:'Rompe tu récord<br>colecciona logros<br>llega a la cima', btn:'JUGAR ▶', next:'SIGUIENTE →', skip:'OMITIR ✕', yes:'SÍ', no:'NO', confirmMenu:'¿Volver al menú?<br>Se perderá el juego.', confirmExit:'¿Seguro que quieres<br>salir?' },
+  ru: { sub1:'ВРЕМЯ СКЛАДЫВАТЬ БЛОКИ', features:'5 режимов игры<br>54 достижения<br>Онлайн таблица лидеров', howTitle:'— КАК ИГРАТЬ —', tap:'НАЖМИ НА ЭКРАН', tapDesc:'Совмести движущийся блок<br>точно сверху<br>Чем точнее — тем больше очков!', ready:'ГОТОВ ИГРАТЬ?', readyDesc:'Побей свой рекорд<br>собирай достижения<br>достигни вершины', btn:'ИГРАТЬ ▶', next:'ДАЛЕЕ →', skip:'ПРОПУСТИТЬ ✕', yes:'ДА', no:'НЕТ', confirmMenu:'Вернуться в меню?<br>Игра будет потеряна.', confirmExit:'Вы уверены, что<br>хотите выйти?' },
 };
 
+
+// Confirm dialog
+function showConfirm(msg, onYes, onNo){
+  const overlay = document.getElementById('confirm-overlay');
+  const t = OB_LANGS[currentLang] || OB_LANGS.en;
+  document.getElementById('confirm-msg').innerHTML = msg;
+  document.getElementById('confirm-yes').textContent = t.yes || 'EVET';
+  document.getElementById('confirm-no').textContent = t.no || 'HAYIR';
+  overlay.style.display = 'flex';
+  document.getElementById('confirm-yes').onclick = ()=>{ overlay.style.display='none'; onYes(); };
+  document.getElementById('confirm-no').onclick = ()=>{ overlay.style.display='none'; if(onNo) onNo(); };
+}
 function applyObLang(){
   const t = OB_LANGS[currentLang] || OB_LANGS.en;
   document.getElementById('ob-sub1').innerHTML = t.sub1;
@@ -2233,6 +2264,21 @@ function applyObLang(){
   });
 })();
 
+
+// Android geri tuşu
+if(window.Capacitor){
+  try {
+    window.Capacitor.Plugins.App.addListener('backButton', ()=>{
+      const t = OB_LANGS[currentLang] || OB_LANGS.en;
+      if(state === 'playing' || state === 'paused'){
+        if(state === 'playing'){ state='paused'; cancelAnimationFrame(animId); stopMusic(); showScreen('pause'); }
+        showConfirm(t.confirmMenu, ()=>{ state='menu'; cancelAnimationFrame(animId); clearInterval(timerInterval); stopMusic(); applyLang(); showScreen('menu'); });
+      } else if(state === 'menu'){
+        showConfirm(t.confirmExit, ()=>{ window.Capacitor.Plugins.App.exitApp(); });
+      }
+    });
+  } catch(e){}
+}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
