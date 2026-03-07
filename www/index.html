@@ -256,6 +256,8 @@ body.lang-ru .start-btn{font-size:1.6rem !important;letter-spacing:2px !importan
 body.lang-ru .nav-btn{font-size:0.56rem !important;letter-spacing:1px !important;}
 body.lang-ru .section-title{font-size:0.58rem !important;letter-spacing:2px !important;}
 
+.ob-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;cursor:pointer;}
+.ob-dot.active{background:#00ffe7;box-shadow:0 0 8px rgba(0,255,231,.6);}
 body.lang-ru .diff-btn{font-size:0.95rem !important;letter-spacing:1px !important;padding:6px 10px !important;}
 body.lang-ru .mode-btn{font-size:0.82rem !important;letter-spacing:1px !important;padding:5px 9px !important;}
 body.lang-ru .start-btn{font-size:1.55rem !important;letter-spacing:2px !important;}
@@ -293,6 +295,48 @@ body.lang-ru .section-title{font-size:0.57rem !important;letter-spacing:2px !imp
 </div>
 
 <!-- MENU -->
+<!-- ONBOARDING -->
+<div class="screen hidden" id="onboarding" style="flex-direction:column;align-items:center;justify-content:center;height:100%;padding:0 24px;text-align:center;">
+  <div id="ob-slides">
+
+    <!-- Slide 1 -->
+    <div class="ob-slide" id="ob-slide-1">
+      <div style="font-size:5rem;margin-bottom:16px;">🎮</div>
+      <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:3.5rem;color:#00ffe7;letter-spacing:4px;text-shadow:0 0 30px rgba(0,255,231,.6);">STACK TIME</div>
+      <div id="ob-sub1" style="font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.4);letter-spacing:3px;margin-top:8px;"></div>
+      <div style="width:60px;height:2px;background:#00ffe7;margin:28px auto;opacity:.4;"></div>
+      <div id="ob-features" style="font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.55);letter-spacing:2px;line-height:1.8;"></div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="ob-slide" id="ob-slide-2" style="display:none;">
+      <div id="ob-how-title" style="font-family:'DM Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.3);letter-spacing:4px;margin-bottom:20px;"></div>
+      <canvas id="ob-canvas" width="180" height="200" style="display:block;margin:0 auto 24px;"></canvas>
+      <div id="ob-tap" style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.8rem;color:#fff;letter-spacing:3px;"></div>
+      <div id="ob-tap-desc" style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.4);letter-spacing:2px;margin-top:10px;line-height:1.8;"></div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="ob-slide" id="ob-slide-3" style="display:none;">
+      <div style="font-size:4rem;margin-bottom:16px;">🏆</div>
+      <div id="ob-ready" style="font-family:'Bebas Neue',Impact,sans-serif;font-size:2.8rem;color:#00ffe7;letter-spacing:3px;"></div>
+      <div id="ob-ready-desc" style="font-family:'DM Mono',monospace;font-size:.68rem;color:rgba(255,255,255,.35);letter-spacing:2px;margin-top:12px;line-height:1.8;"></div>
+      <button id="ob-start-btn" style="margin-top:32px;font-family:'Bebas Neue',Impact,sans-serif;font-size:1.8rem;letter-spacing:4px;padding:14px 52px;border:2px solid #00ffe7;background:transparent;color:#00ffe7;cursor:pointer;transition:all .2s;" onmouseenter="this.style.background='rgba(0,255,231,.1)'" onmouseleave="this.style.background='transparent'"></button>
+    </div>
+
+  </div>
+
+  <!-- Dots + Next -->
+  <div style="margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:20px;">
+    <div style="display:flex;gap:10px;">
+      <div class="ob-dot active" data-i="1"></div>
+      <div class="ob-dot" data-i="2"></div>
+      <div class="ob-dot" data-i="3"></div>
+    </div>
+    <button id="ob-next-btn" style="font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:3px;color:rgba(255,255,255,.4);background:none;border:1px solid rgba(255,255,255,.2);padding:8px 24px;cursor:pointer;">İLERİ →</button>
+  </div>
+</div>
+
 <div class="screen" id="menu" style="position:relative;">
   <button id="settings-btn" style="position:absolute;top:14px;right:14px;font-family:'DM Mono','Courier New',Courier,monospace;font-size:.7rem;color:rgba(255,255,255,.4);letter-spacing:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:6px 10px;cursor:pointer;z-index:10;">⚙️</button>
   <h1 style="margin:4px 0 0;">STACK</h1>
@@ -1778,6 +1822,7 @@ function showScreen(name){
   else if(name==='titles'){document.getElementById('titles-screen').classList.remove('hidden');renderTitlesScreen();}
   else if(name==='profile'){document.getElementById('profile-screen').classList.remove('hidden');renderProfile();}
   else if(name==='tournament'){document.getElementById('tournament-screen').classList.remove('hidden');renderTournamentScreen();if(!tournamentLB)fetchTournamentLB();}
+  else if(name==='onboarding'){document.getElementById('onboarding').classList.remove('hidden');}
   // Her ekran açılışında çeviriyi uygula
   if(name!=='game')applyLang();
 }
@@ -2031,6 +2076,7 @@ document.getElementById('lang-select').addEventListener('change',e=>{
   currentLang=e.target.value;
   LS.set('stack_lang',currentLang);
   applyLang();
+  if(document.getElementById('onboarding') && !document.getElementById('onboarding').classList.contains('hidden')) applyObLang();
 });
 ['freeze','wide','auto'].forEach(k=>{document.getElementById('pu-'+k).addEventListener('click',e=>{e.stopPropagation();usePowerup(k);});});
 document.getElementById('player-name-input').addEventListener('input',e=>{settings.playerName=e.target.value.trim().toUpperCase();saveSettings();});
@@ -2088,7 +2134,102 @@ initDailyTasks();
 applyTheme(currentTheme);
 renderModeRow();
 drawBg();
-applyLang();showScreen('menu');
+
+// ONBOARDING çevirileri
+const OB_LANGS = {
+  tr: { sub1:'BLOKLARI YIĞMANIN ZAMANI GELDİ', features:'5 oyun modu<br>54 başarım<br>Online liderlik tablosu', howTitle:'— NASIL OYNANIR —', tap:'EKRANA DOKUN', tapDesc:'Hareket eden bloğu<br>tam üste denk getir<br>Ne kadar mükemmel — o kadar puan!', ready:'HAZIR MISIN?', readyDesc:'Rekorunu kır<br>başarımları topla<br>zirveye çık', btn:'OYNAYALIM ▶', next:'İLERİ →' },
+  en: { sub1:'TIME TO STACK THE BLOCKS', features:'5 game modes<br>54 achievements<br>Online leaderboard', howTitle:'— HOW TO PLAY —', tap:'TAP THE SCREEN', tapDesc:'Align the moving block<br>perfectly on top<br>More perfect — more points!', ready:'READY TO PLAY?', readyDesc:'Break your record<br>collect achievements<br>reach the top', btn:'LET\'S PLAY ▶', next:'NEXT →' },
+  de: { sub1:'ZEIT, DIE BLÖCKE ZU STAPELN', features:'5 Spielmodi<br>54 Erfolge<br>Online-Bestenliste', howTitle:'— WIE MAN SPIELT —', tap:'TIPPE AUF DEN BILDSCHIRM', tapDesc:'Bewege den Block<br>exakt auf den Stapel<br>Je perfekter — desto mehr Punkte!', ready:'BEREIT?', readyDesc:'Brich deinen Rekord<br>sammle Erfolge<br>erreiche die Spitze', btn:'SPIELEN ▶', next:'WEITER →' },
+  es: { sub1:'ES HORA DE APILAR BLOQUES', features:'5 modos de juego<br>54 logros<br>Tabla de clasificación online', howTitle:'— CÓMO JUGAR —', tap:'TOCA LA PANTALLA', tapDesc:'Alinea el bloque móvil<br>perfectamente encima<br>¡Más perfecto — más puntos!', ready:'¿LISTO PARA JUGAR?', readyDesc:'Rompe tu récord<br>colecciona logros<br>llega a la cima', btn:'JUGAR ▶', next:'SIGUIENTE →' },
+  ru: { sub1:'ВРЕМЯ СКЛАДЫВАТЬ БЛОКИ', features:'5 режимов игры<br>54 достижения<br>Онлайн таблица лидеров', howTitle:'— КАК ИГРАТЬ —', tap:'НАЖМИ НА ЭКРАН', tapDesc:'Совмести движущийся блок<br>точно сверху<br>Чем точнее — тем больше очков!', ready:'ГОТОВ ИГРАТЬ?', readyDesc:'Побей свой рекорд<br>собирай достижения<br>достигни вершины', btn:'ИГРАТЬ ▶', next:'ДАЛЕЕ →' },
+};
+
+function applyObLang(){
+  const t = OB_LANGS[currentLang] || OB_LANGS.en;
+  document.getElementById('ob-sub1').innerHTML = t.sub1;
+  document.getElementById('ob-features').innerHTML = t.features;
+  document.getElementById('ob-how-title').innerHTML = t.howTitle;
+  document.getElementById('ob-tap').innerHTML = t.tap;
+  document.getElementById('ob-tap-desc').innerHTML = t.tapDesc;
+  document.getElementById('ob-ready').innerHTML = t.ready;
+  document.getElementById('ob-ready-desc').innerHTML = t.readyDesc;
+  document.getElementById('ob-start-btn').innerHTML = t.btn;
+  document.getElementById('ob-next-btn').innerHTML = t.next;
+}
+
+// ONBOARDING
+(function(){
+  const seen = LS.get('ob_seen', false);
+  if(seen){ applyLang(); showScreen('menu'); return; }
+
+  showScreen('onboarding');
+  applyObLang();
+  let slide = 1;
+
+  // Slide 2 animasyonu - canvas
+  function animOb(){
+    const c = document.getElementById('ob-canvas');
+    if(!c) return;
+    const ctx = c.getContext('2d');
+    const W = 180, H = 200;
+    let bx = 0, dir = 1, speed = 2;
+    const blocks = [{x:40, w:100, y:150, color:'#00ffe7'},{x:40, w:100, y:120, color:'#ff006e'}];
+    function frame(){
+      ctx.clearRect(0,0,W,H);
+      // sabit bloklar
+      blocks.forEach(b=>{
+        ctx.fillStyle = b.color + '33';
+        ctx.fillRect(b.x, b.y, b.w, 24);
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(b.x, b.y, b.w, 24);
+      });
+      // hareketli blok
+      bx += dir * speed;
+      if(bx+100>W-10 || bx<10) dir *= -1;
+      ctx.fillStyle = '#a29bfe33';
+      ctx.fillRect(bx, 90, 100, 24);
+      ctx.strokeStyle = '#a29bfe';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(bx, 90, 100, 24);
+      // dokunma işareti
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.beginPath();
+      ctx.arc(W/2, 50, 18, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👆', W/2, 56);
+      if(document.getElementById('ob-slide-2') && document.getElementById('ob-slide-2').style.display !== 'none')
+        requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  function goSlide(n){
+    document.getElementById('ob-slide-'+slide).style.display='none';
+    document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('active', i+1===n));
+    slide = n;
+    document.getElementById('ob-slide-'+slide).style.display='block';
+    if(slide===2) animOb();
+    if(slide===3) document.getElementById('ob-next-btn').style.display='none';
+    else document.getElementById('ob-next-btn').style.display='block';
+  }
+
+  document.getElementById('ob-next-btn').addEventListener('click', ()=>{
+    if(slide < 3) goSlide(slide+1);
+  });
+  document.querySelectorAll('.ob-dot').forEach(d=>{
+    d.addEventListener('click', ()=> goSlide(+d.dataset.i));
+  });
+  document.getElementById('ob-start-btn').addEventListener('click', ()=>{
+    LS.set('ob_seen', true);
+    applyLang();
+    showScreen('menu');
+  });
+})();
+
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
