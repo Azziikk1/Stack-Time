@@ -6,12 +6,16 @@
     "allowMixedContent": true,
     "captureInput": true,
     "webContentsDebuggingEnabled": false,
-    "backgroundColor": "#0a0a0f"
+    "backgroundColor": "#0a0a0f",
+    "overrideUserAgent": ""
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0,
       "backgroundColor": "#0a0a0f"
+    },
+    "App": {
+      "handleBack": true
     }
   }
 }
