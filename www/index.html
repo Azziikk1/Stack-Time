@@ -2273,7 +2273,7 @@ window.handleAndroidBack = function(){
   const onboardingVisible = !document.getElementById('onboarding').classList.contains('hidden');
   if(onboardingVisible){
     // Onboarding ekranındayken direkt çık
-    if(window.Capacitor) window.Capacitor.Plugins.App.exitApp();
+    if(window.AndroidBridge) window.AndroidBridge.exitApp(); else if(window.Capacitor) window.Capacitor.Plugins.App.exitApp();
     return;
   }
   if(state === 'playing'){
@@ -2296,7 +2296,7 @@ window.handleAndroidBack = function(){
     state='menu'; applyLang(); showScreen('menu');
   } else if(state === 'menu'){
     showConfirm(t.confirmExit, ()=>{
-      if(window.Capacitor) window.Capacitor.Plugins.App.exitApp();
+      if(window.AndroidBridge) window.AndroidBridge.exitApp(); else if(window.Capacitor) window.Capacitor.Plugins.App.exitApp();
     });
   } else {
     applyLang(); showScreen('menu');
