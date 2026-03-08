@@ -297,16 +297,36 @@ body.lang-ru .section-title{font-size:0.57rem !important;letter-spacing:2px !imp
 <!-- MENU -->
 <!-- SPLASH -->
 <div id="splash-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;">
-  <canvas id="splash-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
-  <!-- Sahne 1: AraStudio -->
-  <div id="splash-scene1" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.8s ease;">
+  <div id="splash-logo-scene" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;transition:opacity 0.8s ease;">
+    <svg width="90" height="90" viewBox="0 0 130 130" style="overflow:visible">
+      <defs>
+        <linearGradient id="spGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#C9993A"/>
+        </linearGradient>
+        <filter id="spGlow"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="spShadow"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="spGoldGlow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g transform="skewX(-10) translate(6,0)">
+        <polygon points="65,10 100,114 86,114 65,58 44,114 30,114" fill="#1a1000" transform="translate(5,6)" filter="url(#spShadow)" opacity="0.9"/>
+        <polygon points="65,10 100,114 86,114 65,58 44,114 30,114" fill="rgba(255,255,255,0.04)"/>
+        <polyline points="30,114 65,10 100,114" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" filter="url(#spGlow)"/>
+        <line x1="86" y1="114" x2="100" y2="114" stroke="rgba(255,255,255,.9)" stroke-width="2.8" stroke-linecap="round"/>
+        <line x1="30" y1="114" x2="44" y2="114" stroke="rgba(255,255,255,.9)" stroke-width="2.8" stroke-linecap="round"/>
+        <polyline points="44,114 65,58 86,114" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="42" y1="82" x2="88" y2="82" stroke="url(#spGold)" stroke-width="2.5" stroke-linecap="round" filter="url(#spGoldGlow)"/>
+        <line x1="89" y1="96" x2="100" y2="96" stroke="#08080e" stroke-width="4"/>
+        <line x1="30" y1="96" x2="41" y2="96" stroke="#08080e" stroke-width="4"/>
+        <circle cx="65" cy="82" r="3" fill="url(#spGold)" filter="url(#spGoldGlow)" opacity="0.85"/>
+      </g>
+    </svg>
     <div style="text-align:center;">
-      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;color:rgba(255,255,255,.7);letter-spacing:8px;">ARASTUDIO</div>
-      <div style="width:40px;height:1px;background:rgba(255,255,255,.2);margin:12px auto;"></div>
-      <div style="font-family:'DM Mono',monospace;font-size:.5rem;color:rgba(255,255,255,.25);letter-spacing:4px;">PRESENTS</div>
+      <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:1.6rem;letter-spacing:9px;color:#fff;">ARAS <span style="color:rgba(255,255,255,.4)">STUDIO</span></div>
+      <div style="font-size:.4rem;letter-spacing:7px;color:#C9993A;margin-top:4px;">games</div>
     </div>
   </div>
-  <!-- Sahne 2: Bloklar + Stack Time -->
+
+  <!-- Sahne 3: Bloklar + Stack Time -->
   <canvas id="splash-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 0.5s ease;"></canvas>
   <div id="splash-title" style="position:absolute;top:12%;left:0;right:0;z-index:2;text-align:center;opacity:0;transition:opacity 0.8s ease;">
     <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:4rem;color:#00ffe7;letter-spacing:6px;text-shadow:0 0 40px rgba(0,255,231,.7);">STACK TIME</div>
@@ -2228,19 +2248,20 @@ function applyObLang(){
 
 function runSplash(onDone){
   const splash = document.getElementById('splash-screen');
-  const scene1 = document.getElementById('splash-scene1');
   const canvas = document.getElementById('splash-canvas');
   const titleEl = document.getElementById('splash-title');
 
-  // --- SAHNE 1: AraStudio ---
-  setTimeout(()=>{ scene1.style.opacity = '1'; }, 200);
-  setTimeout(()=>{ scene1.style.opacity = '0'; }, 1800);
+  // --- SAHNE 1: Logo ---
+  setTimeout(()=>{
+    const logoEl = document.getElementById('splash-logo-scene');
+    if(logoEl){ logoEl.style.opacity = '1'; }
+    setTimeout(()=>{ if(logoEl) logoEl.style.opacity = '0'; }, 1800);
+  }, 200);
 
   // --- SAHNE 2: Bloklar + Stack Time ---
   setTimeout(()=>{
     canvas.style.opacity = '1';
     runBlockAnim(canvas, titleEl, ()=>{
-      // Fade out ve menüye geç
       splash.style.transition = 'opacity 0.9s ease';
       splash.style.opacity = '0';
       setTimeout(()=>{ splash.style.display='none'; onDone(); }, 900);
