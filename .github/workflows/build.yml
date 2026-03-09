@@ -43,36 +43,21 @@ jobs:
       - name: Patch styles.xml
         run: python3 patch_styles.py
 
-      - name: Patch targetSdkVersion to 35
+      - name: Patch SDK versions to 34
         run: |
-          echo "=== variables.gradle ==="
-          cat android/variables.gradle || echo "NOT FOUND"
           python3 - << 'PYEOF'
           import re, os
 
-          # variables.gradle'ı patch et
           vpath = 'android/variables.gradle'
           if os.path.exists(vpath):
               with open(vpath, 'r') as f:
                   content = f.read()
-              content = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 35', content)
-              content = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 35', content)
+              content = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 34', content)
+              content = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 34', content)
               with open(vpath, 'w') as f:
                   f.write(content)
-              print("variables.gradle patched:")
+              print("variables.gradle patched to 34:")
               print(content)
-          else:
-              print("variables.gradle not found, trying build.gradle")
-
-          # build.gradle'ı da patch et
-          bpath = 'android/app/build.gradle'
-          with open(bpath, 'r') as f:
-              content = f.read()
-          content = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', content)
-          content = re.sub(r'targetSdk\s*=\s*\d+', 'targetSdk = 35', content)
-          with open(bpath, 'w') as f:
-              f.write(content)
-          print("build.gradle patched")
           PYEOF
 
       - name: Set app icon
