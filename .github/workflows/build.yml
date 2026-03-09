@@ -46,12 +46,14 @@ jobs:
 
       - name: Patch targetSdkVersion to 35
         run: |
-          sed -i 's/targetSdkVersion 33/targetSdkVersion 35/g' android/app/build.gradle
-          sed -i 's/targetSdkVersion 34/targetSdkVersion 35/g' android/app/build.gradle
-          sed -i 's/targetSdk = 33/targetSdk = 35/g' android/app/build.gradle
-          sed -i 's/targetSdk = 34/targetSdk = 35/g' android/app/build.gradle
-          echo "targetSdkVersion patched:"
-          grep -n "targetSdk" android/app/build.gradle
+          echo "=== BEFORE PATCH ==="
+          cat android/app/build.gradle
+          # Her türlü formatı yakala
+          sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 35/g' android/app/build.gradle
+          sed -i 's/targetSdk = [0-9]*/targetSdk = 35/g' android/app/build.gradle
+          sed -i 's/targetSdk=[0-9]*/targetSdk=35/g' android/app/build.gradle
+          echo "=== AFTER PATCH ==="
+          cat android/app/build.gradle
 
       - name: Set app icon
         run: |
@@ -61,20 +63,14 @@ jobs:
             mkdir -p "$dir"
             cp icon_512_final.png "$dir/ic_launcher.png"
             cp icon_512_final.png "$dir/ic_launcher_round.png"
-            echo "Copied to $dir"
           done
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
-          echo "Removed adaptive icons"
           sed -i 's/android:roundIcon="[^"]*"//g' android/app/src/main/AndroidManifest.xml
-          echo "Manifest updated"
-          ls android/app/src/main/res/mipmap-xxxhdpi/
 
       - name: Patch MainActivity for back button
         run: |
           MAIN=$(find android/app/src/main/java -name "MainActivity.java" | head -1)
-          echo "Found: $MAIN"
           cp MainActivity.java "$MAIN"
-          echo "MainActivity patched"
 
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/stackgame.keystore
