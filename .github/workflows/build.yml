@@ -45,20 +45,35 @@ jobs:
 
       - name: Patch targetSdkVersion to 35
         run: |
-          echo "=== build.gradle before ==="
-          grep -n "targetSdk\|compileSdk\|minSdk" android/app/build.gradle || true
+          echo "=== variables.gradle ==="
+          cat android/variables.gradle || echo "NOT FOUND"
           python3 - << 'PYEOF'
-          import re
-          with open('android/app/build.gradle', 'r') as f:
+          import re, os
+
+          # variables.gradle'ı patch et
+          vpath = 'android/variables.gradle'
+          if os.path.exists(vpath):
+              with open(vpath, 'r') as f:
+                  content = f.read()
+              content = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 35', content)
+              content = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 35', content)
+              with open(vpath, 'w') as f:
+                  f.write(content)
+              print("variables.gradle patched:")
+              print(content)
+          else:
+              print("variables.gradle not found, trying build.gradle")
+
+          # build.gradle'ı da patch et
+          bpath = 'android/app/build.gradle'
+          with open(bpath, 'r') as f:
               content = f.read()
           content = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', content)
           content = re.sub(r'targetSdk\s*=\s*\d+', 'targetSdk = 35', content)
-          with open('android/app/build.gradle', 'w') as f:
+          with open(bpath, 'w') as f:
               f.write(content)
-          print("Patched successfully")
+          print("build.gradle patched")
           PYEOF
-          echo "=== build.gradle after ==="
-          grep -n "targetSdk\|compileSdk\|minSdk" android/app/build.gradle || true
 
       - name: Set app icon
         run: |
