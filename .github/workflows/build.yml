@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android AAB
 
 on:
   push:
@@ -48,17 +48,14 @@ jobs:
         run: |
           pip install pillow --quiet
           python3 resize_icon.py
-          # Tüm mipmap klasörlerine zorla kopyala
           for dir in android/app/src/main/res/mipmap-mdpi android/app/src/main/res/mipmap-hdpi android/app/src/main/res/mipmap-xhdpi android/app/src/main/res/mipmap-xxhdpi android/app/src/main/res/mipmap-xxxhdpi; do
             mkdir -p "$dir"
             cp icon_512_final.png "$dir/ic_launcher.png"
             cp icon_512_final.png "$dir/ic_launcher_round.png"
             echo "Copied to $dir"
           done
-          # adaptive icon klasörünü sil
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           echo "Removed adaptive icons"
-          # AndroidManifest - icon referansını güncelle
           sed -i 's/android:roundIcon="[^"]*"//g' android/app/src/main/AndroidManifest.xml
           echo "Manifest updated"
           ls android/app/src/main/res/mipmap-xxxhdpi/
@@ -76,18 +73,18 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
-      - name: Build release APK
+      - name: Build release AAB
         run: |
           cd android
-          ./gradlew assembleRelease \
+          ./gradlew bundleRelease \
             -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/android/app/stackgame.keystore \
             -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
-      - name: Upload APK
+      - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: stack-release
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 30
