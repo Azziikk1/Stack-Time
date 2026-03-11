@@ -25,8 +25,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Install Android SDK 35
-        run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Install dependencies
         run: npm install
@@ -41,19 +40,16 @@ jobs:
         run: npx cap sync android
 
       - name: Force copy index.html
-        run: |
-          cp www/index.html android/app/src/main/assets/public/index.html
+        run: cp www/index.html android/app/src/main/assets/public/index.html
 
       - name: Patch styles.xml
         run: python3 patch_styles.py
 
       - name: Patch SDK versions and Gradle
-        run: |
-          python3 patch_sdk.py
+        run: python3 patch_sdk.py
 
       - name: Fix Kotlin stdlib duplicates
-        run: |
-          python3 fix_kotlin.py
+        run: python3 fix_kotlin.py
 
       - name: Upgrade Capacitor to fix BroadcastReceiver crash
         run: |
@@ -61,8 +57,10 @@ jobs:
           npx cap sync android
 
       - name: Force copy index.html again after sync
-        run: |
-          cp www/index.html android/app/src/main/assets/public/index.html
+        run: cp www/index.html android/app/src/main/assets/public/index.html
+
+      - name: Increment versionCode
+        run: python3 increment_version.py
 
       - name: Set app icon
         run: |
@@ -76,22 +74,7 @@ jobs:
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           sed -i 's/android:roundIcon="[^"]*"//g' android/app/src/main/AndroidManifest.xml
 
-      - name: Increment versionCode
-        run: |
-          python3 - << 'PYEOF'
-          import re
-          path = 'android/app/build.gradle'
-          with open(path, 'r') as f:
-              content = f.read()
-          def bump(m):
-              return 'versionCode ' + str(int(m.group(1)) + 1)
-          content = re.sub(r'versionCode\s+(\d+)', bump, content)
-          with open(path, 'w') as f:
-              f.write(content)
-          print("versionCode incremented")
-          PYEOF
-
-
+      - name: Patch MainActivity for back button
         run: |
           MAIN=$(find android/app/src/main/java -name "MainActivity.java" | head -1)
           cp MainActivity.java "$MAIN"
