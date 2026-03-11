@@ -76,7 +76,22 @@ jobs:
           rm -rf android/app/src/main/res/mipmap-anydpi-v26
           sed -i 's/android:roundIcon="[^"]*"//g' android/app/src/main/AndroidManifest.xml
 
-      - name: Patch MainActivity for back button
+      - name: Increment versionCode
+        run: |
+          python3 - << 'PYEOF'
+          import re
+          path = 'android/app/build.gradle'
+          with open(path, 'r') as f:
+              content = f.read()
+          def bump(m):
+              return 'versionCode ' + str(int(m.group(1)) + 1)
+          content = re.sub(r'versionCode\s+(\d+)', bump, content)
+          with open(path, 'w') as f:
+              f.write(content)
+          print("versionCode incremented")
+          PYEOF
+
+
         run: |
           MAIN=$(find android/app/src/main/java -name "MainActivity.java" | head -1)
           cp MainActivity.java "$MAIN"
